@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Expense Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-wallet"></i>
+                    <h1>Student Wallet</h1>
+                </div>
+                <div class="today-date" id="todayDate">
+                    <i class="fas fa-calendar-day"></i>
+                    <span>Loading...</span>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <div class="month-selector">
+                    <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                    <div class="current-month" id="currentMonth">October 2024</div>
+                    <button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Add this button in the header controls section (near theme toggle) -->
+<button class="reset-btn" id="resetBtn" title="Reset All Data">
+    <i class="fas fa-redo"></i>
+</button>
+
+<!-- Add this modal before the closing body tag (after other modals) -->
+<div class="modal" id="resetModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Reset All Data</h3>
+            <button class="close-btn" id="closeResetModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="warning-message">
+                <h4>Are you sure you want to reset all data?</h4>
+                <p>This action will:</p>
+                <ul>
+                    <li><i class="fas fa-times-circle"></i> Delete all transactions</li>
+                    <li><i class="fas fa-times-circle"></i> Reset monthly budgets to ₹12,000</li>
+                    <li><i class="fas fa-times-circle"></i> Clear all your financial data</li>
+                    <li><i class="fas fa-exclamation-circle"></i> This action cannot be undone!</li>
+                </ul>
+                <div class="confirmation-input">
+                    <label for="confirmReset">
+                        Type "RESET" to confirm:
+                    </label>
+                    <input type="text" id="confirmReset" placeholder="Type RESET here">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="confirmResetBtn" class="btn btn-danger" disabled>
+                    <i class="fas fa-bomb"></i> Reset Everything
+                </button>
+                <button id="cancelResetBtn" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card budget">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Monthly Budget</h3>
+                        <div class="stat-amount" id="monthlyBudget">₹12,000</div>
+                        <div class="stat-actions">
+                            <button class="edit-btn" id="editBudgetBtn">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card spent">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Total Spent</h3>
+                        <div class="stat-amount" id="totalSpent">₹0</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="spentProgress" style="width: 0%"></div>
+                            </div>
+                            <span id="spentPercentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card remaining">
+                    <div class="stat-icon">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Remaining</h3>
+                        <div class="stat-amount" id="remainingAmount">₹12,000</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card balance">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Current Balance</h3>
+                        <div class="stat-amount" id="currentBalance">₹12,000</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="chart-container large">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Expense Distribution</h3>
+                        <div class="chart-controls">
+                            <select id="chartType">
+                                <option value="pie">Pie</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="expenseChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Monthly Trend</h3>
+                    </div>
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Transaction Management -->
+            <div class="content-grid">
+                <!-- Add Transaction Form -->
+                <div class="form-card">
+                    <h3><i class="fas fa-plus-circle"></i> Add Transaction</h3>
+                    <form id="transactionForm">
+                        <div class="form-group">
+                            <div class="type-toggle">
+                                <button type="button" class="type-btn active" data-type="expense">
+                                    <i class="fas fa-minus-circle"></i> Expense
+                                </button>
+                                <button type="button" class="type-btn" data-type="income">
+                                    <i class="fas fa-plus-circle"></i> Income
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="amount"><i class="fas fa-rupee-sign"></i> Amount</label>
+                            <input type="number" id="amount" placeholder="0.00" min="1" step="1" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category"><i class="fas fa-tag"></i> Category</label>
+                            <select id="category" required>
+                                <!-- Options will be loaded dynamically -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description"><i class="fas fa-file-alt"></i> Description</label>
+                            <input type="text" id="description" placeholder="What was this for?">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date"><i class="fas fa-calendar"></i> Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Transaction
+                            </button>
+                            <button type="button" id="clearForm" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Transaction List -->
+                <div class="transactions-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Recent Transactions</h3>
+                        <div class="filter-controls">
+                            <select id="transactionFilter">
+                                <option value="all">All Transactions</option>
+                                <option value="expense">Expenses Only</option>
+                                <option value="income">Income Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="transactions-list" id="transactionsList">
+                        <!-- Transactions will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-receipt fa-3x"></i>
+                            <h4>No Transactions Yet</h4>
+                            <p>Add your first transaction to get started!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="summary">
+                            Showing <span id="filteredCount">0</span> transactions
+                        </div>
+                        <button class="view-all-btn" id="viewAllBtn">
+                            <i class="fas fa-eye"></i> View All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Overview -->
+            <div class="categories-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-tags"></i> Expense Categories</h3>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Categories will be loaded here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Budget Edit Modal -->
+        <div class="modal" id="budgetModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-edit"></i> Edit Monthly Budget</h3>
+                    <button class="close-btn" id="closeBudgetModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="newBudget">New Monthly Budget (₹)</label>
+                        <input type="number" id="newBudget" value="12000" min="0" step="100" required>
+                        <small>Default budget for each new month: ₹12,000</small>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="saveBudgetBtn" class="btn btn-primary">Save Changes</button>
+                        <button id="cancelBudgetBtn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Details Modal -->
+        <div class="modal" id="transactionDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="detailTitle">Transaction Details</h3>
+                    <button class="close-btn" id="closeDetailModal">&times;</button>
+                </div>
+                <div class="modal-body" id="transactionDetails">
+                    <!-- Details will be loaded here -->
+                </div>
+                <div class="modal-actions">
+                    <button id="deleteTransactionBtn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button id="closeDetailBtn" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button class="fab" id="fab">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
